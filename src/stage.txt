@@ -1,0 +1,11 @@
+The release candidate has been prepared in:
+
+    candidate
+
+Please stage it to https://dist.apache.org/repos/dist/dev/knox like this:
+
+    ant stage-candidate
+
+A release vote template has been generated here:
+
+    target/vote.txt

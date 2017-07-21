@@ -1,0 +1,392 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<project name="Apache Knox Gateway" default="build" basedir=".">
+
+<description>
+Release build file for the Apache Knox Gateway
+</description>
+
+<property name="gateway-name" value="Apache Knox"/>
+<property name="gateway-project" value="knox"/>
+<property name="gateway-artifact" value="knox"/>
+    <property name="gateway-version" value="0.9.0"/>
+<property name="release-manager" value="kminder"/>
+
+<property name="gateway-home" value="${gateway-artifact}-${gateway-version}"/>
+
+<property name="build-url" value="https://builds.apache.org/job/Knox-${gateway-version}/ws/target/${gateway-version}"/>
+
+<property name="install.dir" value="install"/>
+<property name="candidate.dir" value="candidate"/>
+
+<property name="svn.release.path" value="https://dist.apache.org/repos/dist/release/${gateway-project}" />
+<property name="svn.staging.path" value="https://dist.apache.org/repos/dist/dev/${gateway-project}" />
+<condition property="isUnix">
+<os family="unix"/>
+</condition>
+
+<condition property="isWindows">
+<os family="windows"/>
+</condition>
+
+<condition property="mvn.cmd" value="mvn">
+<os family="unix" />
+</condition>
+<condition property="mvn.cmd" value="mvn.bat">
+<os family="windows" />
+</condition>
+
+<condition property="svn.cmd" value="svn">
+<os family="unix" />
+</condition>
+<condition property="svn.cmd" value="svn">
+<os family="windows" />
+</condition>
+
+<condition property="curl.cmd" value="curl">
+<os family="unix" />
+</condition>
+<condition property="curl.cmd" value="curl">
+<os family="windows" />
+</condition>
+
+  <target name="_username">
+    <input message="" addproperty="username">
+      <handler classname="org.apache.tools.ant.input.SecureInputHandler"/>
+    </input>
+  </target>
+
+  <target name="_password">
+    <input message="" addproperty="password">
+      <handler classname="org.apache.tools.ant.input.SecureInputHandler"/>
+    </input>
+  </target>
+
+  <target name="_passphrase">
+    <input message="" addproperty="passphrase">
+      <handler classname="org.apache.tools.ant.input.SecureInputHandler"/>
+    </input>
+  </target>
+
+<target name="_init" description="Initialize the build.">
+</target>
+
+<target name="clean" depends="_init" description="Clean up any build artifacts.">
+<delete dir="target"/>
+<delete dir="${install.dir}"/>
+<delete dir="${candidate.dir}"/>
+</target>
+
+<target name="build" depends="_init" description="Build the product.">
+<exec executable="${mvn.cmd}">
+    <arg value="clean"/>
+    <arg value="install"/>
+</exec>
+</target>
+
+<target name="build-notest" depends="_init" description="Build the product without running tests.">
+<exec executable="${mvn.cmd}">
+    <arg value="-DskipTests"/>
+    <arg value="clean"/>
+    <arg value="install"/>
+</exec>
+</target>
+
+<target name="verify" depends="_init" description="Perform the verification build.">
+    <exec executable="${mvn.cmd}">
+        <arg value="clean"/>
+        <arg value="verify"/>
+    </exec>
+</target>
+<target name="package" depends="_init" description="Build and package the product (aka verify).">
+<exec executable="${mvn.cmd}">
+    <arg value="-Ppackage"/>
+    <arg value="clean"/>
+    <arg value="install"/>
+</exec>
+<copy todir="target/${gateway-version}">
+    <fileset file="CHANGES"/>
+</copy>
+</target>
+<target name="quick-package" depends="_init" description="Build and package the product (aka verify).">
+<exec executable="${mvn.cmd}">
+    <arg value="-DskipTests"/>
+    <arg value="-Ppackage"/>
+    <arg value="install"/>
+</exec>
+<copy todir="target/${gateway-version}">
+    <fileset file="CHANGES"/>
+</copy>
+</target>
+
+<target name="daily" depends="full" description="Perform the daily build."/>
+<target name="full" depends="_init" description="Perform a full build (aka daily).">
+<exec executable="${mvn.cmd}">
+    <arg value="-Panalyze"/>
+    <arg value="-Prelease"/>
+    <arg value="site"/>
+</exec>
+</target>
+
+<target name="post-build" depends="_init,_changes"/>
+
+<target name="_changes" depends="_init">
+<copy file="CHANGES" todir="target/${gateway-version}"/>
+</target>
+
+<target name="build-candidate">
+<exec executable="${curl.cmd}">
+    <arg value="--silent"/>
+    <arg value="--request"/>
+    <arg value="POST"/>
+    <arg value="https://builds.apache.org/job/Knox-${gateway-version}/build?token=knox-remote-build-token"/>
+</exec>
+</target>
+
+    <target name="download-candidate" depends="_username,_password">
+        <mkdir dir="${candidate.dir}"/>
+        <get username="${username}" password="${password}" dest="${candidate.dir}">
+            <url url="${build-url}/knox-${gateway-version}.zip"/>
+            <url url="${build-url}/knox-${gateway-version}.zip.md5"/>
+            <url url="${build-url}/knox-${gateway-version}.zip.sha"/>
+            <url url="${build-url}/knox-${gateway-version}-src.zip"/>
+            <url url="${build-url}/knox-${gateway-version}-src.zip.md5"/>
+            <url url="${build-url}/knox-${gateway-version}-src.zip.sha"/>
+            <url url="${build-url}/knox-${gateway-version}.tar.gz"/>
+            <url url="${build-url}/knox-${gateway-version}.tar.gz.md5"/>
+            <url url="${build-url}/knox-${gateway-version}.tar.gz.sha"/>
+            <url url="${build-url}/CHANGES"/>
+        </get>
+    </target>
+
+    <target name="download-stage" depends="_username,_password">
+        <mkdir dir="${install.dir}"/>
+        <get dest="${install.dir}" username="${username}" password="${password}">
+            <url url="${svn.staging.path}/knox-${gateway-version}/knox-${gateway-version}.zip"/>
+            <url url="${svn.staging.path}/knox-${gateway-version}/knox-${gateway-version}.zip.md5"/>
+            <url url="${svn.staging.path}/knox-${gateway-version}/knox-${gateway-version}.zip.sha"/>
+            <url url="${svn.staging.path}/knox-${gateway-version}/knox-${gateway-version}.zip.asc"/>
+            <url url="${svn.staging.path}/knox-${gateway-version}/knox-${gateway-version}-src.zip"/>
+            <url url="${svn.staging.path}/knox-${gateway-version}/knox-${gateway-version}-src.zip.md5"/>
+            <url url="${svn.staging.path}/knox-${gateway-version}/knox-${gateway-version}-src.zip.sha"/>
+            <url url="${svn.staging.path}/knox-${gateway-version}/knox-${gateway-version}-src.zip.asc"/>
+            <url url="${svn.staging.path}/knox-${gateway-version}/knox-${gateway-version}.tar.gz"/>
+            <url url="${svn.staging.path}/knox-${gateway-version}/knox-${gateway-version}.tar.gz.md5"/>
+            <url url="${svn.staging.path}/knox-${gateway-version}/knox-${gateway-version}.tar.gz.sha"/>
+            <url url="${svn.staging.path}/knox-${gateway-version}/knox-${gateway-version}.tar.gz.asc"/>
+            <url url="${svn.staging.path}/knox-${gateway-version}/CHANGES"/>
+        </get>
+    </target>
+
+    <target name="verify-stage" depends="_init">
+        <echo>Verify ${gateway-artifact}-${gateway-version}.zip</echo>
+        <exec executable="gpg" dir="${install.dir}" failonerror="true">
+            <arg value="--verify"/>
+            <arg value="${gateway-artifact}-${gateway-version}.zip.asc"/>
+        </exec>
+        <checksum file="${install.dir}/${gateway-artifact}-${gateway-version}.zip" verifyproperty="zip.md5.ok"/>
+        <fail message="MD5 Invalid"><condition><isfalse value="${zip.md5.ok}"/></condition></fail>
+        <checksum file="${install.dir}/${gateway-artifact}-${gateway-version}.zip" algorithm="SHA" verifyproperty="zip.sha.ok"/>
+        <fail message="SHA Invalid"><condition><isfalse value="${zip.sha.ok}"/></condition></fail>
+
+        <echo>Verify ${gateway-artifact}-${gateway-version}-src.zip</echo>
+        <exec executable="gpg" dir="${install.dir}" failonerror="true">
+            <arg value="--verify"/>
+            <arg value="${gateway-artifact}-${gateway-version}-src.zip.asc"/>
+        </exec>
+        <checksum file="${install.dir}/${gateway-artifact}-${gateway-version}-src.zip" verifyproperty="src.md5.ok"/>
+        <fail message="MD5 Invalid"><condition><isfalse value="${src.md5.ok}"/></condition></fail>
+        <checksum file="${install.dir}/${gateway-artifact}-${gateway-version}-src.zip" algorithm="SHA" verifyproperty="src.sha.ok"/>
+        <fail message="SHA Invalid"><condition><isfalse value="${src.sha.ok}"/></condition></fail>
+
+        <echo>Verify ${gateway-artifact}-${gateway-version}.tar.gz</echo>
+        <exec executable="gpg" dir="${install.dir}" failonerror="true">
+            <arg value="--verify"/>
+            <arg value="${gateway-artifact}-${gateway-version}.tar.gz.asc"/>
+        </exec>
+        <checksum file="${install.dir}/${gateway-artifact}-${gateway-version}.tar.gz" verifyproperty="tar.md5.ok"/>
+        <fail message="MD5 Invalid"><condition><isfalse value="${tar.md5.ok}"/></condition></fail>
+        <checksum file="${install.dir}/${gateway-artifact}-${gateway-version}.tar.gz" algorithm="SHA" verifyproperty="tar.sha.ok"/>
+        <fail message="SHA Invalid"><condition><isfalse value="${tar.sha.ok}"/></condition></fail>
+
+    </target>
+
+    <target name="sign-candidate" depends="_init,_passphrase" description="Sign a downloaded created release.">
+        <delete>
+            <fileset dir="${candidate.dir}" includes="*.asc"/>
+        </delete>
+        <exec executable="gpg" dir="${candidate.dir}">
+            <arg value="--armor"/>
+            <arg value="--passphrase"/>
+            <arg value="${passphrase}"/>
+            <arg value="--detach-sig"/>
+            <arg value="${gateway-artifact}-${gateway-version}.zip"/>
+        </exec>
+        <exec executable="gpg" dir="${candidate.dir}">
+            <arg value="--armor"/>
+            <arg value="--passphrase"/>
+            <arg value="${passphrase}"/>
+            <arg value="--detach-sig"/>
+            <arg value="${gateway-artifact}-${gateway-version}-src.zip"/>
+        </exec>
+        <exec executable="gpg" dir="${candidate.dir}">
+            <arg value="--armor"/>
+            <arg value="--passphrase"/>
+            <arg value="${passphrase}"/>
+            <arg value="--detach-sig"/>
+            <arg value="${gateway-artifact}-${gateway-version}.tar.gz"/>
+        </exec>
+        <copy file="src/vote.txt" tofile="target/vote.txt">
+            <filterchain>
+                <expandproperties/>
+            </filterchain>
+        </copy>
+        <loadfile property="stage-message" srcFile="src/stage.txt">
+            <filterchain>
+                <expandproperties/>
+            </filterchain>
+        </loadfile>
+        <echo message="${stage-message}"/>
+    </target>
+
+    <target name="release" depends="_init">
+        <exec executable="${mvn.cmd}">
+            <arg value="-Ppackage,release"/>
+            <arg value="clean"/>
+            <arg value="install"/>
+        </exec>
+        <copy todir="target/${gateway-version}">
+            <fileset file="CHANGES"/>
+        </copy>
+    </target>
+
+    <target name="stage-candidate" depends="_username,_password,unstage-candidate" description="Stage release artifacts.">
+        <exec executable="svn">
+            <arg value="import" />
+            <arg value="${candidate.dir}"/>
+            <arg value="${svn.staging.path}/${gateway-artifact}-${gateway-version}/"/>
+            <arg value="-m"/>
+            <arg value="Staging Apache Knox Gateway version ${gateway-version}."/>
+            <arg value="--username" />
+            <arg value="${username}" />
+            <arg value="--password" />
+            <arg value="${password}" />
+            <arg value="--trust-server-cert" />
+            <arg value="--non-interactive" />
+        </exec>
+    </target>
+
+    <target name="unstage-candidate" depends="_username,_password" description="Delete staged release artifacts.">
+        <exec executable="svn">
+            <arg value="delete" />
+            <arg value="${svn.staging.path}/${gateway-artifact}-${gateway-version}/"/>
+            <arg value="-m"/>
+            <arg value="Removing Apache Knox Gateway version ${gateway-version} from staging."/>
+            <arg value="--username" />
+            <arg value="${username}" />
+            <arg value="--password" />
+            <arg value="${password}" />
+            <arg value="--trust-server-cert" />
+            <arg value="--non-interactive" />
+        </exec>
+    </target>
+
+    <target name="promote-release" depends="_username,_password" description="Promote staged artifacts to release area.">
+        <exec executable="svn">
+            <arg value="move"/>
+            <arg value="${svn.staging.path}/${gateway-artifact}-${gateway-version}"/>
+            <arg value="${svn.release.path}/${gateway-version}"/>
+            <arg value="-m"/>
+            <arg value="Releasing Apache Knox Gateway version ${gateway-version}." />
+            <arg value="--username" />
+            <arg value="${username}" />
+            <arg value="--password" />
+            <arg value="${password}" />
+            <arg value="--trust-server-cert" />
+            <arg value="--non-interactive" />
+        </exec>
+    </target>
+
+    <target name="delete-test-home" depends="_init">
+        <delete dir="${install.dir}" quiet="true"/>
+    </target>
+
+    <target name="_install-test-home-windows" depends="delete-test-home" if="isWindows">
+        <unzip src="target/${gateway-version}/${gateway-artifact}-${gateway-version}.zip" dest="${install.dir}"/>
+    </target>
+
+    <target name="_install-test-home-unix" depends="delete-test-home" if="isUnix">
+        <untar src="target/${gateway-version}/${gateway-artifact}-${gateway-version}.tar.gz" dest="${install.dir}" compression="gzip"/>
+        <chmod file="${install.dir}/${gateway-artifact}-${gateway-version}/bin/gateway.sh" perm="544"/>
+        <chmod file="${install.dir}/${gateway-artifact}-${gateway-version}/bin/ldap.sh" perm="544"/>
+        <chmod file="${install.dir}/${gateway-artifact}-${gateway-version}/bin/knoxcli.sh" perm="544"/>
+        <exec executable="bin/knoxcli.sh" dir="${install.dir}/${gateway-artifact}-${gateway-version}">
+            <arg value="create-master"/>
+            <arg value="--master"/>
+            <arg value="knox"/>
+        </exec>
+        <exec executable="bin/knoxcli.sh" dir="${install.dir}/${gateway-artifact}-${gateway-version}">
+            <arg value="create-cert"/>
+        </exec>
+    </target>
+
+    <target name="install-test-home" depends="_install-test-home-unix,_install-test-home-windows" description="Install binary release into install directory.">
+        <!--
+        <echo file="${install.dir}/${gateway-artifact}-${gateway-version}/data/security/master">#1.0# Mon, Aug 26 2013 14:25:31.483
+            cGkvajhUZHBNSTQ9OjpPMk5PQktYaHRyUmJoTW1zWGo0bytRPT06OkxtVjlvSDdIOWdvSEZqNTRlWVJ2N3c9PQ==</echo>
+        <chmod file="${install.dir}/${gateway-artifact}-${gateway-version}/data/security/master" perm="600"/>
+        -->
+    </target>
+
+    <target name="start-test-ldap" description="Spawn test LDAP server.">
+        <exec executable="bin/ldap.sh" dir="${install.dir}/${gateway-artifact}-${gateway-version}">
+            <arg value="start"/>
+        </exec>
+    </target>
+
+    <target name="start-test-gateway" description="Start test gateway server.">
+        <exec executable="bin/gateway.sh" dir="${install.dir}/${gateway-artifact}-${gateway-version}">
+            <arg value="start"/>
+        </exec>
+    </target>
+
+    <target name="start-debug-gateway" description="Start test gateway server.">
+        <exec executable="java" dir="${install.dir}/${gateway-artifact}-${gateway-version}">
+            <arg value="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005"/>
+            <arg value="-jar"/>
+            <arg value="bin/gateway.jar"/>
+        </exec>
+    </target>
+
+    <target name="stop-test-ldap" description="Spawn test LDAP server.">
+        <exec executable="bin/ldap.sh" dir="${install.dir}/${gateway-artifact}-${gateway-version}">
+            <arg value="stop"/>
+        </exec>
+    </target>
+
+    <target name="stop-test-gateway" description="Start test gateway server.">
+        <exec executable="bin/gateway.sh" dir="${install.dir}/${gateway-artifact}-${gateway-version}">
+            <arg value="stop"/>
+        </exec>
+    </target>
+
+    <target name="start-test-servers" depends="start-test-ldap,start-test-gateway" description="Start test LDAP and test gateway servers."/>
+    <target name="stop-test-servers" depends="stop-test-gateway,stop-test-ldap" description="Stop test LDAP server and gateway servers."/>
+    <target name="restart-test-servers" depends="stop-test-servers,start-test-servers" description="Restart test LDAP and gateway servers."/>
+
+</project>
