@@ -20,7 +20,7 @@
     <parent>
         <groupId>org.apache.knox</groupId>
         <artifactId>gateway</artifactId>
-        <version>0.9.0</version>
+        <version>0.13.0</version>
     </parent>
     <artifactId>gateway-provider-security-jwt</artifactId>
 
@@ -41,6 +41,13 @@
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-servlet-filter-adapter</artifactId>
             <version>3.0.0.Final</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-annotations</artifactId>
+                </exclusion>
+	    </exclusions>
+
         </dependency>
         <!--<dependency>-->
         <!--<groupId>pontus-redaction</groupId>-->

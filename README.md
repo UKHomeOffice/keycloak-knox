@@ -10,8 +10,8 @@ The Apache license was chosen, as this is derived from an Apache project
 ## Create the symbolic links:
 ```
 cd /usr/hdp/current/knox-server/lib
-ln -s /opt/pontus/gateway-service-pontus-0.9.0.jar
-ln -s /opt/pontus/gateway-provider-security-pontus-jwt-0.9.0.jar
+ln -s /opt/pontus/gateway-service-pontus-0.13.0.jar
+ln -s /opt/pontus/gateway-provider-security-pontus-jwt-0.13.0.jar
 ln -s /opt/pontus/pontus-redaction-common-0.0.1-SNAPSHOT.jar
 ```
 
