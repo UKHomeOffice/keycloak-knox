@@ -124,7 +124,7 @@ public class PontusServiceDeploymentContributor extends ServiceDeploymentContrib
       serviceRules = UrlRewriteRulesDescriptorFactory.load(
            "xml", reader);
 
-    } catch (Exception e) {
+    } catch (Throwable e) {
       e.printStackTrace();
     }
 
