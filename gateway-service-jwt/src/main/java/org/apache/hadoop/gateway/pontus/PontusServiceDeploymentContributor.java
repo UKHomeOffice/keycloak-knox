@@ -112,7 +112,7 @@ public class PontusServiceDeploymentContributor extends ServiceDeploymentContrib
       if (servicesDir.exists() && servicesDir.isDirectory())
       {
         //
-        //
+        // new conf
         JAXBContext context = JAXBContext.newInstance(ServiceDefinition.class);
         Unmarshaller unmarshaller = context.createUnmarshaller();
         //
