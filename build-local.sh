@@ -1,7 +1,7 @@
 #!/bin/bash
 DIR="$( cd "$(dirname "$0")" ; pwd -P )"
 echo DIR is $DIR
-VERSION=0.12.0
+VERSION=0.13.0
 export DISTDIR="$DIR/../pontus-dist/opt/pontus/pontus-knox/knox-$VERSION";
 
 
