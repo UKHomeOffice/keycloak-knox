@@ -1,29 +1,27 @@
 #!/bin/bash
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-VERSION=1.0.0-SNAPSHOT
+DIR="$( cd "$(dirname "$0")" ; pwd -P )"
 echo DIR is $DIR
-export DISTDIR="$DIR/../pontus-dist/opt/pontus/pontus-keycloak/pv-gdpr-$VERSION";
+VERSION=0.12.0
+export DISTDIR="$DIR/../pontus-dist/opt/pontus/pontus-knox/knox-$VERSION";
+
+
+
+DEST_DIR=$DIR/../pontus-dist/opt/pontus/pontus-knox/current
+CURDIR=`pwd`
+
+if [[ ! -d $DEST_DIR ]] ; then
+  printf "Must run the knox build first; please try again later \n"
+  exit 0;
+fi
 
 CURDIR=`pwd`
 cd $DIR
 mvn -DskipTests clean install
 
-if [[ ! -d $DISTDIR ]]; then
-  mkdir -p $DISTDIR
-fi
+cp $DIR/*/target/*.jar $DEST_DIR/lib
 
-cd $DISTDIR
-
-rm -rf *
-
-
-cp -r $DIR/bin $DIR/conf $DISTDIR
-mkdir -p $DISTDIR/lib
-
-cp $DIR/target/*.jar $DISTDIR/lib
-
-cd ..
-
-ln -s pv-gdpr-$VERSION current
-
+cd $DEST_DIR/lib
+if [[ ! -f pontus-redaction-common-0.0.1-SNAPSHOT.jar ]]; then
+  ln -s ../../../pontus-redaction/current/lib/pontus-redaction-common-0.0.1-SNAPSHOT.jar
+fi 
 cd $CURDIR
