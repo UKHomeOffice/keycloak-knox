@@ -40,7 +40,7 @@
         <dependency>
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-servlet-filter-adapter</artifactId>
-            <version>3.0.0.Final</version>
+            <version>3.3.0.Final</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
