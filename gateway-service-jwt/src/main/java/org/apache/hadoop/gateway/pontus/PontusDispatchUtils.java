@@ -31,6 +31,8 @@ public class PontusDispatchUtils {
     if ( principal != null ) {
       UsernamePasswordCredentials credentials =
           new UsernamePasswordCredentials(principal, PASSWORD_PLACEHOLDER);
+      BasicScheme bs = new BasicScheme();
+//      bs.authenticate(credentials,request,null);
       request.addHeader(BasicScheme.authenticate(credentials, "US-ASCII", false));
     }
   }
