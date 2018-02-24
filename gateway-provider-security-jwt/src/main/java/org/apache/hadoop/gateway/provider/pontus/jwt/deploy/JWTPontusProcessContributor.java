@@ -33,7 +33,7 @@ public class JWTPontusProcessContributor extends
     ProviderDeploymentContributorBase {
   private static final String ENCRYPT_ACCESS_TOKENS = "encrypt_access_tokens";
   private static final String GATEWAY = "__gateway";
-  private static final String FILTER_CLASSNAME = "JWTPontusProcessFilter";
+  private static final String FILTER_CLASSNAME = "org.apache.hadoop.gateway.provider.pontus.jwt.deploy.filter.JWTPontusProcessFilter";
   private CryptoService crypto;
 
   @Override
