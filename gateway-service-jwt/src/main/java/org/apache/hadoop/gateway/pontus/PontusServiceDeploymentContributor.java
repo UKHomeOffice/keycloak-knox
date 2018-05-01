@@ -100,12 +100,12 @@ public class PontusServiceDeploymentContributor extends ServiceDeploymentContrib
   static {
     try {
 
-      URL url =  PontusServiceDeploymentContributor.class.getClassLoader().getResource("services");
+//      URL url =  PontusServiceDeploymentContributor.class.getClassLoader().getResource("services");
 //      URL url = new URL(getServicesLocation());
 
 //      File servicesDir = new File(url);
 
-      InputStream inputStream = PontusServiceDeploymentContributor.class.getClassLoader().getResourceAsStream("services/pontus/0.0.1/service.xml");// new FileInputStream(servicesDir);
+      InputStream inputStream = PontusServiceDeploymentContributor.class.getClassLoader().getResourceAsStream("/services/pontus/0.0.1/service.xml");// new FileInputStream(servicesDir);
 
 //      if (servicesDir.exists() && servicesDir.isDirectory()) {
 //
@@ -119,7 +119,7 @@ public class PontusServiceDeploymentContributor extends ServiceDeploymentContrib
           inputStream.close();
           //look for rewrite rules as a sibling (for now)
 //          serviceRules = ServiceDefinitionsLoader.loadRewriteRules(file.getParentFile());
-        inputStream = PontusServiceDeploymentContributor.class.getClassLoader().getResourceAsStream("services/pontus/0.0.1/rewrite.xml");
+        inputStream = PontusServiceDeploymentContributor.class.getClassLoader().getResourceAsStream("/services/pontus/0.0.1/rewrite.xml");
          Reader reader = new InputStreamReader(inputStream);
       serviceRules = UrlRewriteRulesDescriptorFactory.load(
            "xml", reader);
