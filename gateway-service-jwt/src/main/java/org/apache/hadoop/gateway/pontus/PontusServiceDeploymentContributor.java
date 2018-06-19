@@ -103,7 +103,7 @@ public class PontusServiceDeploymentContributor extends ServiceDeploymentContrib
 //      URL url =  PontusServiceDeploymentContributor.class.getClassLoader().getResource("services");
 //      URL url = new URL(getServicesLocation());
 
-//      File servicesDir = new File(url);
+//      File se rvicesDir = new File(url);
 
       InputStream inputStream = PontusServiceDeploymentContributor.class.getClassLoader().getResourceAsStream("services/pontus/0.0.1/service.xml");// new FileInputStream(servicesDir);
 
