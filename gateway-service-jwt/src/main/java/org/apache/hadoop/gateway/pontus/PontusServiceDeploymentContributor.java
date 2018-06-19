@@ -32,12 +32,10 @@ import org.apache.hadoop.gateway.filter.rewrite.api.UrlRewriteRulesDescriptorFac
 import org.apache.hadoop.gateway.service.definition.*;
 import org.apache.hadoop.gateway.topology.Provider;
 import org.apache.hadoop.gateway.topology.Service;
-import org.apache.hadoop.gateway.util.ServiceDefinitionsLoader;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
 import java.io.*;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.ProtectionDomain;
@@ -81,7 +79,7 @@ public class PontusServiceDeploymentContributor extends ServiceDeploymentContrib
       }, TrueFileFilter.INSTANCE);
     }
     else {
-      files = new HashSet<>();
+      return files = new HashSet<File>();
     }
 
     return files;
@@ -103,32 +101,29 @@ public class PontusServiceDeploymentContributor extends ServiceDeploymentContrib
     try {
 
 //      URL url =  PontusServiceDeploymentContributor.class.getClassLoader().getResource("services");
-      URI url = new URI(getServicesLocation());
+//      URL url = new URL(getServicesLocation());
 
-      File servicesDir = new File(url);
+//      File se rvicesDir = new File(url);
 
-//      InputStream inputStream = PontusServiceDeploymentContributor.class.getClassLoader().getResourceAsStream("services/pontus/0.0.1/service.xml");// new FileInputStream(servicesDir);
+      InputStream inputStream = PontusServiceDeploymentContributor.class.getClassLoader().getResourceAsStream("services/pontus/0.0.1/service.xml");// new FileInputStream(servicesDir);
 
-      if (servicesDir.exists() && servicesDir.isDirectory())
-      {
-        //
-        // new conf
+//      if (servicesDir.exists() && servicesDir.isDirectory()) {
+//
+//
         JAXBContext context = JAXBContext.newInstance(ServiceDefinition.class);
         Unmarshaller unmarshaller = context.createUnmarshaller();
-        //
-        for (File file : getFileList(servicesDir))
-        {
+//
+//        for (File file : getFileList(servicesDir)) {
 
-          serviceDefinition = (ServiceDefinition) unmarshaller.unmarshal(file);
-          //          inputStream.close();
+          serviceDefinition = (ServiceDefinition) unmarshaller.unmarshal(inputStream);
+          inputStream.close();
           //look for rewrite rules as a sibling (for now)
-          serviceRules = ServiceDefinitionsLoader.loadRewriteRules(file.getParentFile());
-          //        inputStream = PontusServiceDeploymentContributor.class.getClassLoader().getResourceAsStream("services/pontus/0.0.1/rewrite.xml");
-          //         Reader reader = new InputStreamReader(inputStream);
-          //      serviceRules = UrlRewriteRulesDescriptorFactory.load(
-          //           "xml", reader);
-        }
-      }
+//          serviceRules = ServiceDefinitionsLoader.loadRewriteRules(file.getParentFile());
+        inputStream = PontusServiceDeploymentContributor.class.getClassLoader().getResourceAsStream("services/pontus/0.0.1/rewrite.xml");
+         Reader reader = new InputStreamReader(inputStream);
+      serviceRules = UrlRewriteRulesDescriptorFactory.load(
+           "xml", reader);
+
     } catch (Throwable e) {
       e.printStackTrace();
     }

@@ -106,7 +106,7 @@ tee /usr/hdp/current/knox-server/conf/topologies/nifi.xml <<'EOF'
           <enabled>false</enabled>
       </provider>
       <provider>
-          <role>PontusJWT</role>
+          <role>pontus_jwt</role>
           <name>process</name>
           <enabled>true</enabled>
       </provider>
